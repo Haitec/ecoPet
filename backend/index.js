@@ -1,13 +1,7 @@
 var app = require("express")();
 var server = require("http").Server(app);
 var io = require("socket.io")(server);
-var elasticsearch = require("elasticsearch");
-
-var client = new elasticsearch.Client({
-  host:
-    "search-fivetum-junction2017-ffvhs3t2abeelwsdpqgyzwxxqa.us-east-2.es.amazonaws.com",
-  log: "trace"
-});
+var elasticsearch = require('./queries');
 
 var lastData = {};
 var formatData = function(data) {
@@ -34,33 +28,8 @@ io.on("connection", function(socket) {
     if (!socket.connected) return;
     console.log("FETCHDATA");
 
-    client
-      .search({
-        index: "locations",
-        type: "location",
-        body: {
-          query: {
-            bool: {
-              must: {
-                query_string: {
-                  query: "espoo"
-                }
-              }
-            }
-          }
-        }
-      })
-      .then(
-        function(resp) {
-          var hits = resp.hits.hits;
-          console.log("resp", resp.hits.hits);
-        },
-        function(err) {
-          console.trace(err.message);
-        }
-      );
-
-    // fetchData();
+    // elasticsearch.searchByQueryString("espoo");
+    elasticsearch.searchAggregatedResults('2017-10-25', '2017-10-28', '6h');
   };
 
   fetchData();
